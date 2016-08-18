@@ -3,24 +3,25 @@
 require 'getopt/std'
 require 'logger'
 
-class Get_dns
-  def initialize(domains=[],filename=nil)
+# Class to launch geoiplookup in parallel iterating on domain list
+class GetDns
+  def initialize(domains = [], filename = nil)
     @domains = domains
-    if !filename.nil?
+    unless filename.nil?
       @logger = Logger.new(filename)
       @log_enabled = true
-    end 
+    end
     start()
   end
 
   def start()
-    printf "%-20s %s\n", "Domain", "Info"
+    printf "%-20s %s\n", 'Domain', 'Info'
     threads = []
     @domains.each do |dmn|
       threads << Thread.new do
-        h_dns = run_geoiplookup(dmn)
+        run_geoiplookup(dmn)
       end
-    end  
+    end
     threads.each { |t| t.join }
   end
 
@@ -28,7 +29,7 @@ class Get_dns
     output = `geoiplookup #{dmn}`
     printf "%-20s %s", dmn, output
     if @log_enabled
-      @logger.info("################################################################")
+      @logger.info('##########################################################')
       @logger.info("Domain: #{dmn}")
       @logger.info("Info: #{output}")
     end
@@ -41,7 +42,7 @@ def usage
   printf "\t -h show this help.\n"
   printf "\t -d comma separated list domain \n"
   printf "\t -f [OPTIONAL] store output in a logfile \n"
-  printf "\n" 
+  printf "\n"
   printf "\n"
   printf "Example: get_dns.rb -d domain1.com,domain2.com -f /tmp/dns_output \n"
   printf "\n"
@@ -49,21 +50,18 @@ def usage
 end
 
 begin
-  opt = Getopt::Std.getopts("hd:f:")
-rescue => e 
+  opt = Getopt::Std.getopts('hd:f:')
+rescue => e
   printf "\t\n#{e.message}\n\n"
   usage
 end
 
-if opt['h'] or opt.empty? 
+if opt['h'] || opt.empty?
   usage
 end
 
-if !opt['d'].empty?
-  domains = []
-  domains = opt['d'].split(',')
-end
-filename = opt['f'] if !opt['f'].nil?
+domains = opt['d'].split(',') unless opt['d'].empty?
+filename = opt['f'] unless opt['f'].nil?
 
-#Run get_dns class to get domains info using parallel threads
-gdns = Get_dns.new(domains, filename)
+# Run get_dns class to get domains info
+GetDns.new(domains, filename)
