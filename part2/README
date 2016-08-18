@@ -1,2 +1,0 @@
-To get it working run:
-# chef-solo -c solo.rb -j solo.json 
